@@ -11,5 +11,9 @@ public interface DataBase {
 
     List<Training> filter(LocalDate start, LocalDate finish);
 
+    List<Training> filter(String group);
+
     int count();
+
+    void clear();
 }

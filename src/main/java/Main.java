@@ -19,8 +19,8 @@ public class Main {
         Map<String, List<Integer>> exc = new HashMap<>();
         exc.put("Жим штанги", new ArrayList<>(List.of(10, 9, 8)));
         exc.put("Отжимания на брусьях", new ArrayList<>(List.of(15, 15, 15)));
-        Training training = new Training(date, "День груди", exc);
+        Training training = new Training(date, "День ", exc);
         Training training2 = new Training(date, "День ног", exc);
-        dataBase.addTraining(training2);
+        dataBase.clear();
     }
 }
