@@ -9,49 +9,85 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import Training.Root;
 
 
 public class TrainingDataBase implements DataBase {
-    File file;
+    private final File file;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public TrainingDataBase(File _file) {
-        file = _file;
+    public TrainingDataBase(File file) {
+        this.file = file;
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
-    @Override
-    public int addTraining(Training training) {
+    private Root readRoot() {
         Root root;
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
-        try {
-            if (file.exists() && file.length() > 0) {
+        if (file.exists() && file.length() > 0) {
+            try {
                 root = objectMapper.readValue(file, Root.class);
-                root.getTrainings().add(training);
-
-            } else {
-                root = new Root(new ArrayList<>());
-                root.getTrainings().add(training);
+                return root;
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
             }
+        }
+        return new Root(new ArrayList<>());
+    }
+
+    private int writeRoot(Root root) {
+        try {
             objectMapper.writeValue(file, root);
             return 0;
-
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return 1;
         }
     }
 
+    @Override
+    public int addTraining(Training training) {
+        Root root = readRoot();
+        root.getTrainings().add(training);
+        return writeRoot(root);
+    }
+
 
     @Override
     public List<Training> filter(LocalDate start, LocalDate finish) {
-        return List.of();
+        Root root = readRoot();
+
+        return root.
+                getTrainings().
+                stream().
+                filter(x -> (!x.getDateOfTraining().isBefore(start) && !x.getDateOfTraining().isAfter(finish))).
+                collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<Training> filter(String group) {
+        Root root = readRoot();
+        return root.getTrainings().
+                stream().
+                filter(x -> x.getNameOfDay().
+                        equalsIgnoreCase(group)).
+                collect(Collectors.toList());
+
+
     }
 
     @Override
     public int count() {
-        return 0;
+        Root root = readRoot();
+        return root.getTrainings().size();
+    }
+
+    @Override
+    public void clear() {
+        Root root = readRoot();
+        root.getTrainings().clear();
+        writeRoot(root);
     }
 }

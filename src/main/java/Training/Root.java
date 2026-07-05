@@ -9,6 +9,7 @@ import java.util.List;
 public class Root implements Serializable {
     @JsonProperty("Trainings")
     private List<Training> trainings;
+
     public Root() {}
 
     public Root(ArrayList<Training> trainings) {
